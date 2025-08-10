@@ -24,6 +24,6 @@ public class WebSocketConfig implements WebSocketConfigurer {
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(gameWebSocketHandler, "/ws/game")
                 .addInterceptors(authHandshakeInterceptor)
-                .setAllowedOrigins("*"); // adjust this - allowing all now for development
+                .setAllowedOrigins("https://ratedrps.vercel.app", "http://localhost:5173");
     }
 }
