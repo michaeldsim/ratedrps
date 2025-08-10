@@ -10,7 +10,9 @@ class GameService {
     return new Promise((resolve, reject) => {
       if (this.isConnected) return resolve();
 
-      this.ws = new WebSocket(`ws://localhost:8080/ws/game?token=${this.token}`);
+      const wsUrl = import.meta.env.VITE_WS_URL || "ws://localhost:8080";
+
+      this.ws = new WebSocket(`${wsUrl}/ws/game?token=${this.token}`);
 
       this.ws.onopen = () => {
         console.log("WebSocket connected");
