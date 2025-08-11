@@ -30,6 +30,8 @@ This project delivers an interactive, competitive Rock-Paper-Scissors game exper
 
 ## ⚙️ Server (Backend)
 
+This is deployed at `https://ratedrps-server-latest.onrender.com/`. Due to the limited capabilties of the free tier, it will spin down after 15 minutes of inactivity. Please wait at least a minute after queueing to ensure you have joined the queue properly.
+
 ### Technologies
 
 - **Java 17** with **Spring Boot 3** for REST and WebSocket server
