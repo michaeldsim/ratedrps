@@ -19,7 +19,6 @@ const Profile = () => {
         return;
       }
 
-      console.log(session.user);
       try {
         const userProfile = await userService.getUserById(session.user.id);
         setProfile(userProfile);
