@@ -118,7 +118,7 @@ const GameInterface = () => {
       case "draw":
         return (
           <div className="flex flex-col items-center text-center">
-            <span className="text-blue-600">Draw! 🤝</span>;
+            <span className="text-blue-600">Draw! 🤝</span>
             <span>{gameResult.elo_delta}</span>
           </div>
         );
