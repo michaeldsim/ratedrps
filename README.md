@@ -20,22 +20,11 @@ This project delivers an interactive, competitive Rock-Paper-Scissors game exper
 
 ### Technologies
 
-- **React** with functional components & hooks (`useState`, `useEffect`)
 - **React Router** for nested routing (Dashboard, Play, Profile, User pages)
 - **WebSocket API** for real-time game communication
 - **Tailwind CSS** for responsive and modern UI styling
 - **Supabase Auth** for user sign-up, login, and session management
 - **State management** for loading states, game results, and user feedback
-- Responsive UX with loading animations and error handling
-
-### Features
-
-- User authentication (Sign Up / Sign In)
-- Dashboard with nested routes: Play, Profile, Leaderboard, User profiles
-- Real-time matchmaking queue display & game interface
-- Elo and game result display with animations
-- Clean UI components for usability and accessibility
-- Error and loading state visual feedback during network requests
 
 ---
 
