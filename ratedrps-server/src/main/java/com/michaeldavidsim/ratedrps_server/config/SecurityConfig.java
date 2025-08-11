@@ -27,6 +27,8 @@ public class SecurityConfig {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(authorize -> authorize
+                // allow health check endpoint without authentication but this is rate limited with an interceptor
+                .requestMatchers("/api/health_check").permitAll()
                 // allow all for websockets because we check for a token anyway
                 .requestMatchers("/ws/game/**").permitAll()
                 .anyRequest().authenticated()
