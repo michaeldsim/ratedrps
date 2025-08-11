@@ -20,7 +20,7 @@ const GameInterface = () => {
     gameServiceRef.current = new GameService(session?.access_token);
     gameServiceRef.current.setCallbacks({
       onLobbyUpdate: (data) => {
-        console.log("Lobby update", data);
+        // Handle lobby updates if needed - leaving this empty for now
       },
 
       onMatchFound: (data) => {
@@ -34,7 +34,6 @@ const GameInterface = () => {
       },
 
       onGameUpdate: (data) => {
-        console.log("Game update", data);
         if (data.result) {
           const isPlayer1 = userId === data.player1Id;
           const elo_delta = isPlayer1 ? data.player1EloDelta : data.player2EloDelta;
@@ -101,7 +100,6 @@ const GameInterface = () => {
   };
 
   const renderResultMessage = () => {
-    console.log("Game result", gameResult);
     switch (gameResult.result) {
       case "win":
         return (

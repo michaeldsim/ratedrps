@@ -15,24 +15,20 @@ class GameService {
       this.ws = new WebSocket(`${wsUrl}/ws/game?token=${this.token}`);
 
       this.ws.onopen = () => {
-        console.log("WebSocket connected");
         this.isConnected = true;
         resolve();
       };
 
       this.ws.onmessage = (event) => {
-        console.log(event.data);
         const msg = JSON.parse(event.data);
         this.handleMessage(msg);
       };
 
       this.ws.onerror = (err) => {
-        console.error("WebSocket error", err);
         reject(err);
       };
 
       this.ws.onclose = () => {
-        console.log("WebSocket disconnected");
         this.isConnected = false;
         if (this.callbacks.onDisconnect) this.callbacks.onDisconnect();
       };
