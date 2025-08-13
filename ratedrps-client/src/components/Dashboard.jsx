@@ -3,7 +3,7 @@ import { Outlet } from "react-router-dom";
 
 const Dashboard = () => {
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div>
       <Navigation />
       <main>
         <Outlet />

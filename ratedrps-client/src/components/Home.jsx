@@ -18,7 +18,7 @@ const Home = () => {
         <div className="grid md:grid-cols-3 gap-6 md:gap-8 mb-12">
           <FeatureCard
             Icon={Zap}
-            title="Real-time Battles"
+            title="Real-time PvP Battles"
             description="Face opponents in lightning-fast matches."
             color="text-yellow-400"
           />
