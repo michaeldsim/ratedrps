@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { User as UserIcon, Trophy, Clock } from "lucide-react";
 import { userService } from "../services/userService";
+import { supabase } from "../services/supabaseClient";
 import Navigation from "./Navigation";
 
 const User = () => {
@@ -10,12 +11,20 @@ const User = () => {
   const [matches, setMatches] = useState([]);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [loadingMatches, setLoadingMatches] = useState(true);
+  const [profileImageUrl, setProfileImageUrl] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const userProfile = await userService.getUserByUsername(username);
         setProfile(userProfile);
+
+        if (userProfile.avatar_url) {
+                  const { data } = supabase.storage
+                    .from('avatars')
+                    .getPublicUrl(userProfile.avatar_url);
+                  setProfileImageUrl(data.publicUrl);
+        }
       } catch (error) {
         console.error("Failed to fetch user profile:", error);
       } finally {
@@ -88,7 +97,16 @@ const User = () => {
         <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
           <div className="flex items-center gap-6 mb-6">
             <div className="w-20 h-20 bg-purple-600 rounded-full flex items-center justify-center">
-              <UserIcon className="w-10 h-10 text-white" />
+              {profileImageUrl ? (
+                <img
+                  src={profileImageUrl}
+                  alt={profile.username}
+                  className="w-full h-full rounded-full object-cover"
+                />
+                ) : (
+                <UserIcon className="w-10 h-10 text-white" />
+                ) 
+              }
             </div>
             <div>
               <h2 className="text-3xl font-bold text-gray-800">
