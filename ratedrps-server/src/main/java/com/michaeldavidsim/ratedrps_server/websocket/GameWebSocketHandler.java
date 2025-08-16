@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -21,7 +22,8 @@ import com.michaeldavidsim.ratedrps_server.model.GamePlayer;
 import com.michaeldavidsim.ratedrps_server.model.GameSession;
 import com.michaeldavidsim.ratedrps_server.model.User;
 import com.michaeldavidsim.ratedrps_server.service.EloService;
-import com.michaeldavidsim.ratedrps_server.service.SupabaseService;
+import com.michaeldavidsim.ratedrps_server.service.GameService;
+import com.michaeldavidsim.ratedrps_server.service.UserService;
 
 @Component
 public class GameWebSocketHandler extends TextWebSocketHandler {
@@ -36,13 +38,15 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     private final Map<String, Set<WebSocketSession>> gameRooms = new ConcurrentHashMap<>();
     private final Map<String, GameSession> gameMap = new ConcurrentHashMap<>();
 
-    private final SupabaseService supabaseService;
-    private final EloService eloService;
+    @Autowired
+    private EloService eloService;
 
-    public GameWebSocketHandler(SupabaseService supabaseService, EloService eloService) {
-        this.supabaseService = supabaseService;
-        this.eloService = eloService;
-    }
+    @Autowired
+    private GameService gameService;
+
+    @Autowired
+    private UserService userService;
+
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
@@ -55,11 +59,9 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         String userId = (String) session.getAttributes().get("userId");
         if (userId == null) return;
 
-        // Remove from lobby and matchmaking queue
         lobbyPlayers.remove(userId);
         matchmakingQueue.remove(new GamePlayer(userId, "dummy")); // dummy username for removal
 
-        // Remove from game if playing
         String gameId = userGameMap.remove(userId);
         if (gameId != null) {
             Set<WebSocketSession> sessions = gameRooms.get(gameId);
@@ -205,8 +207,8 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
             String winner = determineWinner(gameSession.getPlayer1Move(), gameSession.getPlayer2Move());
             gameSession.setResult("draw".equals(winner) ? "draw" : winner.equals("player1") ? gameSession.getPlayer1Id() : gameSession.getPlayer2Id());
 
-            User player1Stats = supabaseService.getUserStats(gameSession.getPlayer1Id());
-            User player2Stats = supabaseService.getUserStats(gameSession.getPlayer2Id());
+            User player1Stats = userService.getUserStats(gameSession.getPlayer1Id());
+            User player2Stats = userService.getUserStats(gameSession.getPlayer2Id());
 
             int[] newRatings = eloService.calculateNewRatings(player1Stats.getElo(), player2Stats.getElo(), gameSession.getResult().equals(gameSession.getPlayer1Id()) ? 1.0 : gameSession.getResult().equals(gameSession.getPlayer2Id()) ? 0.0 : 0.5);
     
@@ -231,7 +233,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         userGameMap.remove(gameSession.getPlayer2Id());
 
         try {
-            supabaseService.finalizeGame(gameSession);
+            gameService.finalizeGame(gameSession);
         } catch (Exception e) {
             logger.error("Error finalizing game in Supabase", e);
         }
