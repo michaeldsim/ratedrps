@@ -3,6 +3,7 @@ import { BarChart3, Trophy } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { userService } from "../services/userService";
 import { Link } from "react-router-dom";
+import { supabase } from "../services/supabaseClient";
 
 const Leaderboard = () => {
   const { session } = useAuth();
@@ -98,10 +99,24 @@ const Leaderboard = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
-                          <span className="text-white text-sm font-bold">
-                            {user.username.charAt(0).toUpperCase()}
-                          </span>
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-purple-600 overflow-hidden">
+                          {user.avatar_url ? (
+                            <img
+                              src={
+                                user.avatar_url.startsWith("http")
+                                  ? user.avatar_url
+                                  : supabase.storage
+                                      .from("avatars")
+                                      .getPublicUrl(user.avatar_url).data.publicUrl
+                              }
+                              alt={user.username}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-white text-sm font-bold">
+                              {user.username.charAt(0).toUpperCase()}
+                            </span>
+                          )}
                         </div>
                         <span className="font-semibold">
                           {currentUser?.id === user.id ? (

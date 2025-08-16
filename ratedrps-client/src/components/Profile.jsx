@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
-import { Trophy, Clock } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Trophy, Clock, Camera } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { userService } from "../services/userService";
+import { supabase } from "../services/supabaseClient"; 
 import { Link } from "react-router-dom";
 
 const Profile = () => {
@@ -10,6 +11,10 @@ const Profile = () => {
   const [matches, setMatches] = useState([]);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [loadingMatches, setLoadingMatches] = useState(true);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [profileImageUrl, setProfileImageUrl] = useState(null);
+  const fileInputRef = useRef(null);
+  const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -21,7 +26,15 @@ const Profile = () => {
 
       try {
         const userProfile = await userService.getUserById(session.user.id);
+        console.log("Fetched user profile:", userProfile);
         setProfile(userProfile);
+        
+        if (userProfile.avatar_url) {
+          const { data } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(userProfile.avatar_url);
+          setProfileImageUrl(data.publicUrl);
+        }
       } catch (error) {
         console.error("Failed to fetch user profile:", error);
       } finally {
@@ -48,6 +61,58 @@ const Profile = () => {
 
     fetchUserMatches();
   }, [profile]);
+
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file || !session?.user) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB');
+      return;
+    }
+
+    setUploadingImage(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+      formData.append('userId', session.user.id);
+
+      const response = await fetch(`${apiUrl}/users/upload-avatar`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to upload image');
+      }
+
+      const result = await response.json();
+      
+      setProfileImageUrl(result.avatarUrl);
+      setProfile(prev => ({ ...prev, avatar_url: result.avatarPath }));
+
+      console.log('Profile image updated successfully');
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image. Please try again.');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
 
   if (!session) {
     return <div>Please log in to view your profile.</div>;
@@ -99,13 +164,52 @@ const Profile = () => {
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
           <div className="flex items-center gap-6 mb-6">
-            <div className="w-20 h-20 bg-purple-600 rounded-full flex items-center justify-center">
+            <div className="relative">
+              <div className="w-20 h-20 bg-purple-600 rounded-full flex items-center justify-center overflow-hidden">
+                {profileImageUrl ? (
+                  <img
+                    src={profileImageUrl}
+                    alt={`${profile.username}'s avatar`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="text-white text-2xl font-bold">
+                    {profile.username?.charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              
+              {/* Upload button overlay */}
+              <button
+                onClick={triggerFileInput}
+                disabled={uploadingImage}
+                className="absolute inset-0 w-20 h-20 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200 text-white"
+              >
+                {uploadingImage ? (
+                  <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
+                ) : (
+                  <Camera className="w-5 h-5" />
+                )}
+              </button>
+              
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
             </div>
+            
             <div>
               <h2 className="text-3xl font-bold text-gray-800">
                 {profile.username}
               </h2>
               <p className="text-gray-600">ELO Rating: {profile.elo}</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Click avatar to change picture
+              </p>
             </div>
           </div>
 

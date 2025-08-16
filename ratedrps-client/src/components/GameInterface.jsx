@@ -141,7 +141,7 @@ const GameInterface = () => {
               Find an opponent and test your skills!
             </p>
             <p className="text-sm text-gray-500 mb-4">
-              The server for this application is hosted using the Render free tier, so it may take up to a minute to connect based on how recently the server was last hit. The status indictor above will turn green when the server is ready.
+              The server for this application is hosted using the Render free tier, so it may take up to a minute to connect based on how recently the server was last hit. The status indicator above will turn green when the server is ready.
             </p>
             <button
               onClick={startGame}

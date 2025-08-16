@@ -37,7 +37,7 @@ export const userService = {
     try {
       const { data, error } = await supabase
         .from("users")
-        .select("id, username, elo, wins, losses, draws")
+        .select("id, username, elo, wins, losses, draws, avatar_url")
         .order("elo", { ascending: false })
         .limit(10);
 
